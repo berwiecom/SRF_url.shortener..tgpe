@@ -10,13 +10,13 @@ $db = new MyDB();
 
 /* Message Texts */
 $msg_help = <<<EOF
-Hello, just send me URL.
+Hello, just send me an URL and I'll short it.
 
-You can also specific your short code.
+You can also specifiy your custom short code.
 
 <b>Usage</b>
-For instance, send me following text:
-<pre>https://t.me/tgpebot bot</pre>
+For instance, send me the following text:
+<pre>https://t.me/tgpebot bot</pre> or,
 
 Note: You can use <b>a-z</b>, <b>A-Z</b> and <b>0-9</b>.
 Minimum length is <b>3</b> characters.
@@ -31,23 +31,36 @@ Developer: @SeanChannel
 Source Code: tg.pe/repo
 EOF;
 
-if (strpos($TG->data['message']['from']['language_code'], 'zh') !== false)
+if (strpos($TG->data['message']['from']['language_code'], 'de') !== false)
 	$msg_help = <<<EOF
-安安，請直接傳網址給我
+"Jetzt mach ich kurzen Prozess ;-)"
 
-<b>【使用方式】</b>
-如果要自訂短網址，可參考以下範例：
-<pre>https://t.me/tgpebot bot</pre>
+Hallo! Ich bin Dein kleiner "URL-Bot" und mache aus langen Web-Adressen kurze.
+Sende mir einfach eine lange <a href="https://de.wikipedia.org/wiki/Uniform_Resource_Locator" title="URL: Mehr bei Wikipedia">URL</a> (Web-Adresse) und ich k&uuml;rze sie mit einer zufaelligen Buchstabenkombination.
 
-注意：目前僅接受英數字（A-Z, a-z, 0-9）組合、最短 3 個字
+<b>Beispiel</b>
+Sende mir
+<pre>https://de.wikipedia.org/wiki/Telegram</pre>
+Und Du erh&uuml;lst:
+<pre>tg.pe/n4x</pre>
 
-<b>【指令列表】</b>
-/my - 顯示您建立的連結清單
-/help - 顯示此訊息
+Alternativ h&auml;ngst Du ein (aussagekraeftiges) Wort K&uuml;rzel an:
+<pre>https://de.wikipedia.org/wiki/Telegram TlgRM</pre>
+Mindestens 3 Zeichen aus aus <b>a-z</b>, <b>A-Z</b> and <b>0-9</b>.
 
-<b>【關於】</b>
-開發者： @SeanChannel
-原始碼： tg.pe/repo
+
+<b>Kommandos</b>
+Sende mir:
+/my
+und ich zeige Dir alle Deine (Kurz-)Links.
+Diese Hilfe hier bekommst Du mit:
+/help
+
+
+<b>Allg. Info:</b>
+Entwickler: @SeanChannel
+&Uuml;bersetzer: @Berwie_com
+Quell-Code: tg.pe/repo
 EOF;
 
 
@@ -80,7 +93,7 @@ if (preg_match('#^[/!](?<cmd>\w+)(?:@' . $TG->botName . ')?(?:\s+(?<args>.+))?$#
 			break;
 		}
 
-		$text = "You have <b>" . count($data) . "</b> shorten URLs.\n";
+		$text = "You have <b>" . count($data) . "</b> shortened URLs:\n";
 		for ($i=0; $i<count($data) && strlen($text)<4000; $i++) {
 			if (mb_strlen($data[$i]['url']) > 40)
 				$url = mb_substr($data[$i]['url'], 0, 25) . '...' . mb_substr($data[$i]['url'], -5);
@@ -141,7 +154,7 @@ if (idn_to_ascii($domain) !== $domain) {
 
 if (!filter_var($url, FILTER_VALIDATE_URL)) {
 	$TG->sendMsg([
-		'text' => 'Please Send a Vaild URL.'
+		'text' => 'Please send a vaild URL.'
 	]);
 	exit;
 }
@@ -170,7 +183,7 @@ if (strlen($code) > 16) { /* Check Code Length */
 } else if (strlen($code) === 0) { /* Allocate 3-char not-exists code */
 	if ($code = $db->findCodeByUrl($url)) {
 		$TG->sendMsg([
-			'text' => "Success!\n\nhttps://tg.pe/$code"
+			'text' => "tg.pe/$code"
 		]);
 		exit;
 	} else
@@ -178,7 +191,7 @@ if (strlen($code) > 16) { /* Check Code Length */
 } else { /* 1 or 2 char only allow admins */
 	if (!in_array($TG->FromID, TG_ADMINS)) {
 		$TG->sendMsg([
-			'text' => "ERROR: Code should be at least 3 chars"
+			'text' => "ERROR: Custom word must be at least 3 chars long."
 		]);
 		exit;
 	}
@@ -187,9 +200,9 @@ if (strlen($code) > 16) { /* Check Code Length */
 if (strpos($url, "fbclid=")) {
 	$TG->sendMsg([
 		'parse_mode' => 'HTML',
-		'text' => "Hey! Please remove <b>fbclid</b> before sharing URLs.\n\n" .
-		"fbclid is used for Facebook interaction tracking against user privacy.\n\n" .
-		"You can install this <a href='https://addons.mozilla.org/en-US/firefox/addon/facebook-tracking-removal/'>add-on</a> to <b>auto remove</b> Facebook tracking ID.",
+		'text' => "Hey! Please remove <b>fbclid=ForExampleBlaBlaBla</b> before sharing URLs.\n\n" .
+		"The &#39;Facebook Click Identifier&#39; for interaction tracking against user privacy.\n\n" .
+		"To <b>auto-remove</b> it, install this <a title="Browser addon removes ads and user interaction tracking on Facebook™" href='https://addons.mozilla.org/en-US/firefox/addon/facebook-tracking-removal/'>browser addon</a>.",
 		'reply_markup' => [
 			'inline_keyboard' => [
 				[
@@ -219,7 +232,7 @@ if ($error[0] === '00000')
 	]);
 else
 	$TG->sendMsg([
-		'text' => "ERROR: Something went Wrong, please contact @S_ean\n\n" .
+		'text' => "ERROR: Something went wrong, please contact @S_ean\n\n" .
 		"Code: $code\n" .
 		"URL: $url\n" .
 		"Author: $author\n\n" .
